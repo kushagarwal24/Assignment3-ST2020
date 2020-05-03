@@ -1,0 +1,80 @@
+
+TASK 3-> Automatically Update The Container Whenever The Image Update Occurs
+
+```shell
+$ sudo su
+$ mkdir taskthree && cd taskthree
+$ git clone https://github.com/microsoft/project-html-website.git
+$ mv project-html-website webapp
+$ atom Dockerfile
+```
+Dockerfile
+```text
+FROM httpd
+MAINTAINER ashishpandey99@gmail.com
+COPY ./web/ /usr/local/apache2/htdocs/
+```
+Shell
+```shell
+$ docker build -t ashishpandey/taskthree .
+$ docker login
+$ docker push ashishpandey/taskthree
+$ docker run -itd --name autocont --network host ashishpandey/taskthree
+```
+```shell
+$ docker run -d --name watchtower -v /var/run/docker.sock:/var/run/docker.sock v2tec/watchtower autocont
+$ cd webapp
+$ sed -i 's/Success/Failed/g' index.html
+$ cd ..
+$ docker build -t ashishpandey/taskthree .
+$ docker push ashishpandey/taskthree
+$ docker logs watchtower
+--------------------------------------------------------------
+TASK-2
+Create a infinite running docker container and then use child process as "bash" to use docker command on host system
+Create Dockerfile
+FROM ubuntu
+MAINTAINER rhythmbhiwani@gmail.com
+RUN apt-get update
+RUN apt-get install docker.io -y
+ENTRYPOINT tail -f /dev/null
+Run Command to build Dockerfile
+docker build -t rhythmassignment:v2 .
+Run the command to launch the container
+docker run -d --name rhythm_container -v /var/run/docker.sock:/var/run/docker.sock rhythmassignment:v2
+Run this command to use bash as child process
+docker exec -it rhythm_container bash
+Now run any docker command and it will be performed on the host machine, verify it by running
+docker version
+docker images
+docker ps
+-----------------------------------------------------------------------
+#Assignment 4
+#Add new user having sudo permissions
+#Make Dockerfile
+```
+from centos
+maintainer riyasoni
+run yum install httpd -y
+run yum install sudo -y
+copy webapp /var/www/html/
+run useradd riya
+run echo "riya ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/riya && chmod 0440 /etc/sudoers.d/riya
+run echo "ServerName localhost" >> /etc/httpd/conf/httpd.conf
+user riya
+expose 80
+entrypoint sudo httpd -DFOREGROUND
+```
+#Build image
+```
+docker build -t myimage .
+```
+#Run the container
+```
+docker run -d --name testcontainer -p 8080:80 myimage
+```
+#Run exec bash
+```
+docker exec -it testcontainer bash
+```
+#now run any command using sudo
